@@ -35,6 +35,10 @@
                 {
                     "caption": "Output File",
                     "command": "output_file"
+                },
+                {
+                    "caption": "Submission Result",
+                    "command": "submission_details"
                 }
         	]
     	}

@@ -19,5 +19,8 @@
     },
     {
     	"keys": ["ctrl+shift+s"], "command": "user_settings"
+    },
+    {
+        "keys": ["fn+ctrl+r"], "command": "submission_details"
     }
 ]
