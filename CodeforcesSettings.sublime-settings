@@ -1,0 +1,14 @@
+{
+  "C++" : 1,
+  "C++11": 42,
+  "C": 10,
+  "Python2": 7,
+  "Python3": 31,
+  "Lang_ext": {
+    "C++" : "cpp",
+    "C++11": "cpp",
+    "C": "c",
+    "Python2": "py",
+    "Python3": "py"
+  }
+}

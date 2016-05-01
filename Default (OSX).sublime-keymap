@@ -1,0 +1,11 @@
+[
+    { 
+        "keys": ["fn+ctrl+i"], "command": "input_file"
+    },
+    {
+        "keys": ["fn+ctrl+o"], "command": "output_file"
+    },
+    { 
+        "keys": ["fn+ctrl+c"], "command": "custom_cases"
+    }
+]

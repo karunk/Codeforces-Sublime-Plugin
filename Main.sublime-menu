@@ -1,0 +1,40 @@
+[
+{
+    "id": "tools",
+    "children":
+    [
+        {
+        	"id": "wrap",
+        	"caption": "Codeforces Plugin",
+        	"children":
+        	[
+        		{
+        			"caption": "Test against standard testcases",
+        			"command": "example"
+        		},
+        		{
+        			"caption": "Test against custom testcases",
+        			"command": "custom_test"
+        		},
+        		{
+        			"caption": "Submit Solution",
+        			"command": "codeforces"
+        		},
+        		{
+        			"caption": "Plugin Settings",
+        			"command": "codeforces"
+        		},
+                {
+                    "caption": "Input File",
+                    "command": "codeforces"
+                },
+                {
+                    "caption": "Output File",
+                    "command": "codeforces"
+                }
+        	]
+    	}
+        
+    ]
+}
+]
