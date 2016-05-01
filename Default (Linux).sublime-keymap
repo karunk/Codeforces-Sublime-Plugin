@@ -9,16 +9,16 @@
         "keys": ["fn+ctrl+i"], "command": "input_file"
     },
     {
-    	"keys": ["fn+ctrl+c"], "command": "custom_cases"
+        "keys": ["fn+ctrl+c"], "command": "custom_cases"
     },
     {
-    	"keys": ["fn+ctrl+s"], "command": "standard_test"
+        "keys": ["fn+ctrl+s"], "command": "standard_test"
     },
     {
-    	"keys": ["fn+s"], "command": "submit"
+        "keys": ["fn+s"], "command": "submit"
     },
     {
-    	"keys": ["ctrl+shift+s"], "command": "user_settings"
+        "keys": ["ctrl+shift+s"], "command": "user_settings"
     },
     {
         "keys": ["fn+ctrl+r"], "command": "submission_details"
