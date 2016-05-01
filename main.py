@@ -11,8 +11,10 @@ import signal
 import sys
 import filecmp
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "requests-2.9.1"))
-sys.path.append(os.path.join(os.path.dirname(__file__), "beautifulsoup4-4.4.1"))
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+'/requests-2.9.1')
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+'/beautifulsoup4-4.4.1')
+
 import requests
 from bs4 import BeautifulSoup as bs
 
