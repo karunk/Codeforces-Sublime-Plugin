@@ -1,32 +1,32 @@
 [
     { 
-        "keys": ["fn+i"], "command": "initialize"
+        "keys": ["alt+ctrl+i"], "command": "initialize"
     },
     {
-        "keys": ["fn+ctrl+o"], "command": "output_file"
+        "keys": ["shift+ctrl+o"], "command": "output_file"
     },
     { 
-        "keys": ["fn+ctrl+i"], "command": "input_file"
+        "keys": ["shift+ctrl+i"], "command": "input_file"
     },
     {
-        "keys": ["fn+ctrl+c"], "command": "custom_cases"
+        "keys": ["alt+ctrl+c"], "command": "custom_cases"
     },
     {
-        "keys": ["fn+ctrl+s"], "command": "standard_test"
+        "keys": ["alt+ctrl+s"], "command": "standard_test"
     },
     {
-        "keys": ["fn+s"], "command": "submit"
+        "keys": ["alt+shift+s"], "command": "submit"
     },
     {
         "keys": ["ctrl+shift+s"], "command": "user_settings"
     },
     {
-        "keys": ["fn+ctrl+r"], "command": "submission_details"
+        "keys": ["alt+ctrl+r"], "command": "submission_details"
     },
     {
-        "keys": ["fn+ctrl+d"], "command": "directories"
+        "keys": ["ctrl+alt+d"], "command": "directories"
     },
     {
-        "keys": ["fn+ctrl+q"], "command": "question_description"
+        "keys": ["ctrl+alt+q"], "command": "question_description"
     }
 ]
