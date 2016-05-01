@@ -8,17 +8,21 @@
         	"caption": "Codeforces Plugin",
         	"children":
         	[
+                {
+                    "caption": "Initialize Contest",
+                    "command": "initialize"
+                },
         		{
         			"caption": "Test against standard testcases",
-        			"command": "example"
+        			"command": "standard_test"
         		},
         		{
         			"caption": "Test against custom testcases",
-        			"command": "custom_test"
+        			"command": "custom_cases"
         		},
         		{
         			"caption": "Submit Solution",
-        			"command": "codeforces"
+        			"command": "submit"
         		},
         		{
         			"caption": "Plugin Settings",
@@ -26,11 +30,11 @@
         		},
                 {
                     "caption": "Input File",
-                    "command": "codeforces"
+                    "command": "input_file"
                 },
                 {
                     "caption": "Output File",
-                    "command": "codeforces"
+                    "command": "output_file"
                 }
         	]
     	}

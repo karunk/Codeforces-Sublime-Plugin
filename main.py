@@ -272,6 +272,9 @@ class StandardTestCommand(sublime_plugin.WindowCommand):
 					
 				ResultFilePointer.close()
 				self.window.open_file(head+'/ResultFile')
+				v = sublime.active_window().active_view()
+				v.add_regions("OUTPUT", [sublime.Region(0,v.size())], "somescope","", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL|sublime.DRAW_NO_OUTLINE)
+
 
 
 class InputFileCommand(sublime_plugin.WindowCommand):
@@ -290,25 +293,25 @@ class OutputFileCommand(sublime_plugin.WindowCommand):
 
 class CustomCasesCommand(sublime_plugin.WindowCommand):
 	def run(self):
+		head, tail = os.path.split(self.window.active_view().file_name())
 		CurrentWindowFileName = self.window.active_view().file_name().split('/')[-1].split('.')[0]
 		CurrentWindowFileType = self.window.active_view().file_name().split('/')[-1].split('.')[-1]
 		
-		if CurrentWindowFileType!="cpp" and CurrentWindowFileType!="c":
-			sublime.error_message("This snippet only supports C and C++ files for now.")
-			return
 		if os.path.isfile(CurrentWindowFileName) == False:
 			sublime.error_message("You have not complied your solution! Build the executable using sublime text")
 			return
 
 		inputFile = CurrentWindowFileName+"_input.in"
 		outputFile = CurrentWindowFileName+"_output.out"
+
 		if os.path.isfile(inputFile) == False:
 			print(os.path.isfile(inputFile), inputFile)
 			sublime.error_message("Initialize the input first! Enter your custom testcases here")
 			self.window.open_file(inputFile)
 			return
 
-		cmd = "./"+CurrentWindowFileName+"<"+inputFile+">"+outputFile
+
+		cmd = QuoteFunc(head + '/' + tail.split('.')[0])+"<"+QuoteFunc(head + '/' + inputFile)+">"+QuoteFunc(head + '/' + outputFile)
 		command = Command(cmd)
 		command.run(timeout = 3)
 		self.window.open_file(outputFile)
@@ -316,16 +319,40 @@ class CustomCasesCommand(sublime_plugin.WindowCommand):
 
 class SubmitCommand(sublime_plugin.WindowCommand):
 	def run(self):
+		try:
+			json1_file = open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'r')
+			json1_str = json1_file.read()
+			json1_data = json.loads(json1_str)
+			superDict = json1_data
+			json1_file.close()
+		except:
+			sublime.error_message("Question data is not ready! Have you initialized the contest?")
+			return
+		if superDict == {} or "contest_number" not in superDict or "questions" not in superDict or "io" not in superDict:
+			sublime.error_message("Question data is not ready! Have you initialized the contest?")
+			return
+
 		CurrentWindowFileName = self.window.active_view().file_name()
-		print(CurrentWindowFileName)
+		IsActiveWindowPathCorrect = False
+		for quesno in superDict['questions']:
+			if CurrentWindowFileName == superDict['questions'][quesno]["path_to_solution"]:
+				IsActiveWindowPathCorrect = True
+				break
+
+		if IsActiveWindowPathCorrect == False:
+			sublime.error_message("You can only submit solutions to the contest! This is not a solutions file according to the plugin.")
+			return
+
+		
 		UserSettings 	   = sublime.load_settings("UserSettings.sublime-settings")
 		CodeforcesLangDict = sublime.load_settings("CodeforcesSettings.sublime-settings")
 		LangPref = UserSettings.get("Lang_pref")
 		LangCode = CodeforcesLangDict.get(LangPref)
 		Username = UserSettings.get("Login_Settings")['username']
 		Password = UserSettings.get("Login_Settings")['password']
-		
-		
+		ContestId = superDict["contest_number"]
+		ProblemId = CurrentWindowFileName.split('/')[-2]
+
 		
 		base = "http://codeforces.com"
 		cf_enter = "{base}/{login}".format(base=base, login="enter")
@@ -361,7 +388,7 @@ class SubmitCommand(sublime_plugin.WindowCommand):
 			print('fail to connect')
 
 		type_contest = "contest"
-		contest_id = '665'
+		contest_id = str(ContestId)
 		url_submit = "{base}/{type}/{id}/submit".format(
 			base=base, type=type_contest, id=contest_id)
 		print(url_submit)
@@ -376,8 +403,8 @@ class SubmitCommand(sublime_plugin.WindowCommand):
 		parts = {
 			"csrf_token":            csrf_token,
 			"action":                "submitSolutionFormSubmitted",
-			"contestId": '665',
-			"submittedProblemIndex": 'E',
+			"contestId": 			 str(ContestId),
+			"submittedProblemIndex": str(ProblemId),
 			"source":                open(CurrentWindowFileName, "rb"),
 			"programTypeId":         str(LangCode),
 			"sourceFile":            "",
