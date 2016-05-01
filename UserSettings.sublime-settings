@@ -1,10 +1,10 @@
 {
   "Login_Settings": {
 
-      "username": "ladygaga",
-      "password": "scottywalker"
+      "username": "",
+      "password": ""
   },
 
-  "Directory": "/Users/karun/Documents/programming/competetive programming/codeforces",
+  "Directory": "",
   "Lang_pref": "C++11" // C++ , C++11, C, Python2, Python3
 }
