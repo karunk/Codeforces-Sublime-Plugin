@@ -1,11 +1,23 @@
 [
     { 
-        "keys": ["fn+ctrl+i"], "command": "input_file"
+        "keys": ["fn+i"], "command": "initialize"
     },
     {
         "keys": ["fn+ctrl+o"], "command": "output_file"
     },
     { 
-        "keys": ["fn+ctrl+c"], "command": "custom_cases"
+        "keys": ["fn+ctrl+i"], "command": "input_file"
+    },
+    {
+    	"keys": ["fn+ctrl+c"], "command": "custom_cases"
+    },
+    {
+    	"keys": ["fn+ctrl+s"], "command": "standard_test"
+    },
+    {
+    	"keys": ["fn+s"], "command": "submit"
+    },
+    {
+    	"keys": ["ctrl+shift+s"], "command": "user_settings"
     }
 ]

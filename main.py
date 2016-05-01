@@ -265,7 +265,7 @@ class StandardTestCommand(sublime_plugin.WindowCommand):
 					cnt+=1
 					ResultFilePointer.write("\n")
 
-				if cnt == correct_cnt:
+				if cnt-1 == correct_cnt:
 					ResultFilePointer.write("All standatd test casses passed! You can submit your solution now.\n")
 				else:
 					ResultFilePointer.write("Standard Tests failed!\n")
@@ -276,6 +276,98 @@ class StandardTestCommand(sublime_plugin.WindowCommand):
 				v.add_regions("OUTPUT", [sublime.Region(0,v.size())], "somescope","", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL|sublime.DRAW_NO_OUTLINE)
 
 
+class SubmissionDetails(sublime_plugin.WindowCommand):
+	def run(self):
+		CurrentWindowFileName = self.window.active_view().file_name()
+
+		try:
+			json1_file = open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'r')
+			json1_str = json1_file.read()
+			json1_data = json.loads(json1_str)
+			superDict = json1_data
+			json1_file.close()
+		except:
+			sublime.error_message("Question data is not ready! Have you initialized the contest?")
+		if superDict == {} or "contest_number" not in superDict or "questions" not in superDict or "io" not in superDict:
+			sublime.error_message("Question data is not ready! Have you initialized the contest?")
+			return
+
+		CurrentWindowFileName = self.window.active_view().file_name()
+		IsActiveWindowPathCorrect = False
+		for quesno in superDict['questions']:
+			if CurrentWindowFileName == superDict['questions'][quesno]["path_to_solution"]:
+				IsActiveWindowPathCorrect = True
+				break
+
+		if IsActiveWindowPathCorrect == False:
+			sublime.error_message("According to this plugin, this is not a solutions file. You can check status of only solution files!")
+			return
+
+
+		QuestionName = CurrentWindowFileName.split('/')[-1].split('.')[0]
+		QuestionIndex = CurrentWindowFileName.split('/')[-2]
+		if "submission_result" in superDict:
+			if QuestionIndex in superDict["submission_result"]:
+				if superDict["submission_result"][QuestionIndex]["verdict"] == "OK":
+					sublime.message_dialog(superDict["submission_result"][QuestionIndex]["problem_name"]+"\n VERDICT : "+superDict["submission_result"][QuestionIndex]["verdict"]+"\n TEST CASES PASSED : "+str(superDict["submission_result"][QuestionIndex]["passedTestCount"]))
+					return
+
+
+		SubmissionVerdicts = {}
+		UserSettings 	   = sublime.load_settings("UserSettings.sublime-settings")
+		CodeforcesLangDict = sublime.load_settings("CodeforcesSettings.sublime-settings")
+		Username = UserSettings.get("Login_Settings")['username']
+		ContestId = superDict["contest_number"]
+		try:
+			APIr = requests.get("http://codeforces.com/api/user.status?handle="+Username+"&from=1&count=10")
+			APIjson = json.loads(APIr.text)
+		except:
+			sublime.error_message("Error accessing codeforces API. Try some time later")
+			return
+		
+		if APIjson["status"] == "OK":
+			y = APIjson["result"]
+			Submissions = []
+			for i in y:
+				temp = {}
+				temp["verdict"] = i["verdict"]
+				temp["passedTestCount"] = i["passedTestCount"]
+				temp["contestId"] = i["contestId"]
+				temp["problem_index"] = i["problem"]["index"]
+				temp["problem_name"] = i["problem"]["name"]
+				#temp["points"] = i["problem"]["points"]
+				Submissions.append(temp)
+		else:
+			sublime.error_message("Error fetching Submission details! Try again")
+			return
+		ans = {}
+		ans["API_RESULT"] = Submissions
+		SubmissionVerdicts = {}
+
+		for i in reversed(ans["API_RESULT"]):
+			if str(i["contestId"]) == str(ContestId):
+				if i["problem_index"] not in SubmissionVerdicts:
+					SubmissionVerdicts[i["problem_index"]] = {}
+				SubmissionVerdicts[i["problem_index"]]["verdict"] = i["verdict"]
+				SubmissionVerdicts[i["problem_index"]]["passedTestCount"] = i["passedTestCount"]
+				SubmissionVerdicts[i["problem_index"]]["problem_name"] = i["problem_name"]
+		
+		print(SubmissionVerdicts)
+		superDict["submission_result"] = SubmissionVerdicts
+		with open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'w') as fp:
+			json.dump(superDict, fp, indent = 4)
+
+		sublime.message_dialog(superDict["submission_result"][QuestionIndex]["problem_name"]+"\n VERDICT : "+superDict["submission_result"][QuestionIndex]["verdict"]+"\n TEST CASES PASSED : "+str(superDict["submission_result"][QuestionIndex]["passedTestCount"]))
+		#self.window.open_file(os.path.dirname(os.path.realpath(__file__))+'/data.json')
+		
+
+
+
+
+class UserSettingsCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		UserSettingsFilePath = os.path.dirname(os.path.realpath(__file__)) + '/UserSettings.sublime-settings'
+		self.window.open_file(UserSettingsFilePath)
 
 class InputFileCommand(sublime_plugin.WindowCommand):
 	def run(self):
