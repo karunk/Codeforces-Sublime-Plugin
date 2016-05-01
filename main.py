@@ -189,6 +189,9 @@ class DirectoriesCommand(sublime_plugin.TextCommand):
 		UserSettings = sublime.load_settings("UserSettings.sublime-settings")
 		CodeforcesSettings = sublime.load_settings("CodeforcesSettings.sublime-settings")
 		Directory = UserSettings.get('Directory')
+		if Directory == "":
+			sublime.error_message("You have not initialized your codeforces plugin.")
+			return
 		LangPref = UserSettings.get('Lang_pref')
 		LangExt = CodeforcesSettings.get('Lang_ext')
 		Extension = LangExt[LangPref]
@@ -497,9 +500,16 @@ class SubmitCommand(sublime_plugin.WindowCommand):
 		UserSettings 	   = sublime.load_settings("UserSettings.sublime-settings")
 		CodeforcesLangDict = sublime.load_settings("CodeforcesSettings.sublime-settings")
 		LangPref = UserSettings.get("Lang_pref")
+		if LangPref == "":
+			sublime.error_message("You have not initialized your codeforces plugin.")
+			return
+
 		LangCode = CodeforcesLangDict.get(LangPref)
 		Username = UserSettings.get("Login_Settings")['username']
 		Password = UserSettings.get("Login_Settings")['password']
+		if Username == "" or Password == "":
+			sublime.error_message("You have not initialized your codeforces plugin.")
+			return
 		ContestId = superDict["contest_number"]
 		ProblemId = CurrentWindowFileName.split('/')[-2]
 
