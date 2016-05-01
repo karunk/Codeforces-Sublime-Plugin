@@ -9,33 +9,37 @@ import json
 import urllib.request
 import signal
 import sys
+import filecmp
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "requests-2.9.1"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "beautifulsoup4-4.4.1"))
 import requests
 from bs4 import BeautifulSoup as bs
 
+def QuoteFunc(s):
+	return '"' + s + '"'
+
 class Command(object):
-    def __init__(self, cmd):
-        self.cmd = cmd
-        self.process = None
+	def __init__(self, cmd):
+		self.cmd = cmd
+		self.process = None
 
-    def run(self, timeout):
-        def target():
-            print('Thread started')
-            self.process = subprocess.Popen(self.cmd, shell=True, preexec_fn=os.setsid)
-            self.process.communicate()
-            print('Thread finished')
+	def run(self, timeout):
+		def target():
+			print('Thread started')
+			self.process = subprocess.Popen(self.cmd, shell=True, preexec_fn=os.setsid)
+			self.process.communicate()
+			print('Thread finished')
 
-        thread = threading.Thread(target=target)
-        thread.start()
+		thread = threading.Thread(target=target)
+		thread.start()
 
-        thread.join(timeout)
-        if thread.is_alive():
-            print('Terminating process')
-            os.killpg(self.process.pid, signal.SIGTERM)
-            thread.join()
-        print(self.process.returncode)
+		thread.join(timeout)
+		if thread.is_alive():
+			print('Terminating process')
+			os.killpg(self.process.pid, signal.SIGTERM)
+			thread.join()
+		print(self.process.returncode)
 
 
 class InitializeCommand(sublime_plugin.TextCommand):
@@ -57,7 +61,11 @@ class InitializeCommand(sublime_plugin.TextCommand):
 			if len(ordered_soup[i]) == 1:																																																																		
 				questions[ordered_soup[i]] = ordered_soup[i+1] 
 
-
+		#print(questions)
+		QuestionNamesAndDirectories = {}
+		for i in questions:
+			QuestionNamesAndDirectories[i] = {}
+			QuestionNamesAndDirectories[i]['name'] = questions[i]
 		inputString = []
 		outputString = []
 		r = requests.get("http://codeforces.com/contest/"+str(ContestNumber)+"/")
@@ -109,12 +117,12 @@ class InitializeCommand(sublime_plugin.TextCommand):
 			innerDict['output']=outputString
 			myDict[myID]=innerDict
 			superDict = {}
-			superDict['questions'] = questions
+			superDict['questions'] = QuestionNamesAndDirectories
 			superDict['io'] = myDict
 			superDict['contest_number'] = ContestNumber
-			print(superDict)
+			
 			with open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'w') as fp:
-			    json.dump(superDict, fp, indent = 4)
+				json.dump(superDict, fp, indent = 4)
 
 class DirectoriesCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -130,6 +138,7 @@ class DirectoriesCommand(sublime_plugin.TextCommand):
 		json1_str = json1_file.read()
 		json1_data = json.loads(json1_str)
 		superDict = json1_data
+		json1_file.close()
 		
 		QuestionNames = superDict['questions']
 		IO = superDict['io']
@@ -140,7 +149,8 @@ class DirectoriesCommand(sublime_plugin.TextCommand):
 		for i in QuestionNames:
 			dir_ = Directory+'/'+str(i)
 			os.makedirs(dir_)
-			sublime.active_window().open_file(dir_+'/'+QuestionNames[i]+'.'+Extension)
+			sublime.active_window().open_file(dir_+'/'+QuestionNames[i]['name']+'.'+Extension)
+			superDict['questions'][i]['path_to_solution'] = dir_+'/'+QuestionNames[i]['name']+'.'+Extension
 		for ques_no in IO:
 			dest = Directory+'/'+str(ques_no)
 			for i in range(0, len(IO[ques_no]['input'])):
@@ -154,11 +164,115 @@ class DirectoriesCommand(sublime_plugin.TextCommand):
 				target = open(dest+'/'+output_no, 'w')
 				target.write(IO[ques_no]['output'][i])
 				target.close()
-				
+		
+		with open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'w') as fp:
+			 json.dump(superDict, fp, indent = 4)
 					
 
 		
-	
+class StandardTestCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		'''
+		CurrentWindowFileName = self.window.active_view().file_name()
+		head, tail = os.path.split(CurrentWindowFileName)
+		tail = tail.split('.')[0]
+		ExecutableFile = head+'/'+tail
+		InputFile = head+'/input1'
+		TempOutputFile = head+'/output_temp'
+
+
+		ExecutableFile = '"' + ExecutableFile + '"'
+		InputFile 	   = '"' + InputFile 	  + '"'
+		TempOutputFile = '"' + TempOutputFile + '"'
+		cmd = ExecutableFile+"<"+InputFile+">"+TempOutputFile
+		#print(cmd)
+		command = Command(cmd)
+		command.run(timeout = 3)
+
+		'''
+		CurrentWindowFileName = self.window.active_view().file_name()
+		print(CurrentWindowFileName)
+		try:
+			QuestionNumber = CurrentWindowFileName.split('/')[-2]
+			print(QuestionNumber)
+		except:
+			sublime.error_message("Standard Test can only be run from the solution file as an active tab!")
+			return
+
+		try:
+			json1_file = open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'r')
+			json1_str = json1_file.read()
+			json1_data = json.loads(json1_str)
+			superDict = json1_data
+			json1_file.close()
+		except:
+			sublime.error_message("Question data is not ready! Have you initialized the contest?")
+			return
+		
+		if QuestionNumber not in superDict['questions']:
+			sublime.error_message("Your active tab is not a contest solution file! Make sure you have initialized the contest and are using the appropriate solution files.")
+		else:
+			head, tail = os.path.split(CurrentWindowFileName)
+			tail = tail.split('.')[0]
+			ExecutableFile = head + '/' + tail
+			if os.path.isfile(head+'/'+tail) == False:
+				sublime.error_message("You have not created the executable! Use Sublime Text to build the executable.")
+			else:
+				cnt = 1
+				correct_cnt = 0
+				ResultFilePointer = open(head+'/ResultFile', 'w')
+				ResultFilePointer.write("STANDARD TESTING FOR "+str(QuestionNumber)+"  -  "+str(ExecutableFile.split('/')[-1]+"\n\n\n"))
+
+				while(os.path.isfile(head+'/input'+str(cnt))):
+					ResultFilePointer.write("Input #"+str(cnt)+"\n")
+
+					InputFile = head+'/input'+str(cnt)
+					TempOutputFile = head+'/output'+str(cnt)+'_temp'
+					OrigOutputFile = head+'/output'+str(cnt)
+
+					cmd = QuoteFunc(ExecutableFile)+"<"+ QuoteFunc(InputFile) +">"+ QuoteFunc(TempOutputFile)
+					print(cmd)
+					command = Command(cmd)
+					command.run(timeout = 3)
+
+					#Reading all 3 file contents
+					with open(InputFile, 'r') as InputFilePointer:
+						InputFileData = InputFilePointer.read()
+					ResultFilePointer.write(InputFileData.rstrip())
+					ResultFilePointer.write("\n")
+					
+					ResultFilePointer.write("Your Output : -")
+					ResultFilePointer.write("\n")
+					with open(TempOutputFile, 'r') as TempOutputFilePointer:
+						TempOutputFileData = TempOutputFilePointer.read()  
+					ResultFilePointer.write(TempOutputFileData.rstrip())
+					ResultFilePointer.write("\n")
+
+					ResultFilePointer.write("Required Output : -")
+					ResultFilePointer.write("\n")				
+					with open(OrigOutputFile, 'r') as OrigOutputFilePointer:
+						OrigOutputFileData = OrigOutputFilePointer.read() 
+					ResultFilePointer.write(OrigOutputFileData.rstrip())
+					ResultFilePointer.write("\n")
+
+
+					ResultFilePointer.write("Result for case#" + str(cnt) + " ---- > ")
+					if TempOutputFileData.rstrip() == OrigOutputFileData.rstrip():
+						correct_cnt+=1
+						ResultFilePointer.write("OUTPUT MATCH!\n")
+					else:
+						ResultFilePointer.write("INCORRECT OUTPUT!!\n")
+					cnt+=1
+					ResultFilePointer.write("\n")
+
+				if cnt == correct_cnt:
+					ResultFilePointer.write("All standatd test casses passed! You can submit your solution now.\n")
+				else:
+					ResultFilePointer.write("Standard Tests failed!\n")
+					
+				ResultFilePointer.close()
+				self.window.open_file(head+'/ResultFile')
+
 
 class InputFileCommand(sublime_plugin.WindowCommand):
 	def run(self):
@@ -222,7 +336,7 @@ class SubmitCommand(sublime_plugin.WindowCommand):
 		head = soup.head
 		meta = head.findChildren('meta')
 		csrf_token = [
-		    m for m in meta if 'name' in m.attrs and m['name'] == 'X-Csrf-Token']
+			m for m in meta if 'name' in m.attrs and m['name'] == 'X-Csrf-Token']
 		csrf_token = csrf_token[0]["content"]
 				
 		print(csrf_token) # it's working, :)
@@ -231,45 +345,45 @@ class SubmitCommand(sublime_plugin.WindowCommand):
 		password = Password
 
 		login_data = {
-		    'csrf_token': csrf_token,
-		    'action': 'enter',
-		    'handle': user,
-		    'password': password,
+			'csrf_token': csrf_token,
+			'action': 'enter',
+			'handle': user,
+			'password': password,
 		}
 
 		headers = {
-		    'Referer': cf_enter,
-		    'User-agent': 'Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11'
+			'Referer': cf_enter,
+			'User-agent': 'Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11'
 		}
 
 		r = cliente.post(cf_enter, data=login_data, headers=headers)
 		if r.status_code != 200:
-		    print('fail to connect')
+			print('fail to connect')
 
 		type_contest = "contest"
 		contest_id = '665'
 		url_submit = "{base}/{type}/{id}/submit".format(
-		    base=base, type=type_contest, id=contest_id)
+			base=base, type=type_contest, id=contest_id)
 		print(url_submit)
 
 		# url_submit = url_submit +'?csrf_token={0}'.format(csrf_token)
 		r = cliente.get(url_submit, headers=headers)
 		if r.status_code != 200:
-		    print('fail to connect', url_submit)
+			print('fail to connect', url_submit)
 		else:
-		    print('[200] ', url_submit)
+			print('[200] ', url_submit)
 
 		parts = {
-		    "csrf_token":            csrf_token,
-		    "action":                "submitSolutionFormSubmitted",
-		    "contestId": '665',
-		    "submittedProblemIndex": 'E',
-		    "source":                open(CurrentWindowFileName, "rb"),
-		    "programTypeId":         str(LangCode),
-		    "sourceFile":            "",
-		    "_tta":                  "834",
-		    'handle': user,
-		    'password': password
+			"csrf_token":            csrf_token,
+			"action":                "submitSolutionFormSubmitted",
+			"contestId": '665',
+			"submittedProblemIndex": 'E',
+			"source":                open(CurrentWindowFileName, "rb"),
+			"programTypeId":         str(LangCode),
+			"sourceFile":            "",
+			"_tta":                  "834",
+			'handle': user,
+			'password': password
 		}
 
 		r = cliente.post(url_submit, files=parts, headers=headers)
