@@ -14,8 +14,8 @@ This plugin makes it easy to test your solutions against the standard input / ou
 Using this plugin you can directly submit your solution, check if your solution gives correct outputs for the standard test cases, check the status of your submitted solution as well as fetch question details just by the touch of a (few) buttons
 
 #### SETTING UP THE PLUGIN
-Download this repository as a zip file, rename the extension as `.sublime-package` and place it in your Installed Packages directory and restart Sublime to install the package.
-(Sublime Text - > Browse packages and go up one level for installed packages directory)
+Download this repository as a zip file, and simply place the extracted folder in the Packages Directory.
+(Sublime Text - > Browse Packages or Preferences -> Browse Packages)
 
 After the restart, press `ctrl+shift+s` to open the plugin settings file. Enter your codeforces username and password along with the complete directory path where you would like to store your solutions and your preferred language. Make sure everything is in quotes.
 
