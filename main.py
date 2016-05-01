@@ -115,6 +115,23 @@ class InitializeCommand(sublime_plugin.TextCommand):
 				outputString.append(refindOutputString)
 
 			innerDict['output']=outputString
+			Ques = ""
+			Ques+=soupi.findAll('div', class_="title")[0].text
+			Ques+='\n'
+			Ques+=soupi.findAll('div', class_="time-limit")[0].text
+			Ques+='\n'
+			Ques+=soupi.findAll('div', class_="memory-limit")[0].text
+			Ques+='\n'
+			Ques+=soupi.findAll('div', class_="input-file")[0].text
+			Ques+='\n'
+			Ques+=soupi.findAll('div', class_="output-file")[0].text
+			Ques+='\n'
+			p = soupi.findAll('div', class_="problem-statement")[0].findAll('p')
+			for p_ in p:
+				Ques+=p_.text
+				Ques+='\n'
+
+			innerDict['ques']=Ques
 			myDict[myID]=innerDict
 			superDict = {}
 			superDict['questions'] = QuestionNamesAndDirectories
@@ -123,6 +140,49 @@ class InitializeCommand(sublime_plugin.TextCommand):
 			
 			with open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'w') as fp:
 				json.dump(superDict, fp, indent = 4)
+
+class QuestionDescriptionCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		try:
+			json1_file = open(os.path.dirname(os.path.realpath(__file__))+'/data.json', 'r')
+			json1_str = json1_file.read()
+			json1_data = json.loads(json1_str)
+			superDict = json1_data
+			json1_file.close()
+		except:
+			sublime.error_message("Question data is not ready! Have you initialized the contest?")
+			return
+
+		CurrentWindowFileName = self.window.active_view().file_name()
+		IsActiveWindowPathCorrect = False
+		for quesno in superDict['questions']:
+			if CurrentWindowFileName == superDict['questions'][quesno]["path_to_solution"]:
+				IsActiveWindowPathCorrect = True
+				break
+
+		if IsActiveWindowPathCorrect == False:
+			sublime.error_message("Question data can only be loaded from solutions tab.\n\nInitialize the contest and make sure your active tab is a solutions tab.")
+			return
+
+		QuestionNumber = CurrentWindowFileName.split('/')[-2]
+		QuestionDetails = superDict['io'][QuestionNumber]["ques"]
+
+		QuestionDetails = str(QuestionDetails)
+		QuestionDetailsList = QuestionDetails.split('\n')
+
+		head, tail = os.path.split(CurrentWindowFileName)
+		QuestionFilePointer = open(head+'/Question'+'-'+str(QuestionNumber), 'w')
+		for i in QuestionDetailsList:
+			QuestionFilePointer.write(str(i))
+			QuestionFilePointer.write("\n\n")
+
+
+
+		QuestionFilePointer.close()
+		self.window.open_file(head+'/Question'+'-'+str(QuestionNumber))
+
+
+
 
 class DirectoriesCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -191,10 +251,9 @@ class StandardTestCommand(sublime_plugin.WindowCommand):
 
 		'''
 		CurrentWindowFileName = self.window.active_view().file_name()
-		print(CurrentWindowFileName)
+		
 		try:
 			QuestionNumber = CurrentWindowFileName.split('/')[-2]
-			print(QuestionNumber)
 		except:
 			sublime.error_message("Standard Test can only be run from the solution file as an active tab!")
 			return
@@ -360,7 +419,6 @@ class SubmissionDetails(sublime_plugin.WindowCommand):
 		sublime.message_dialog(superDict["submission_result"][QuestionIndex]["problem_name"]+"\n VERDICT : "+superDict["submission_result"][QuestionIndex]["verdict"]+"\n TEST CASES PASSED : "+str(superDict["submission_result"][QuestionIndex]["passedTestCount"]))
 		#self.window.open_file(os.path.dirname(os.path.realpath(__file__))+'/data.json')
 		
-
 
 
 

@@ -22,5 +22,11 @@
     },
     {
         "keys": ["fn+ctrl+r"], "command": "submission_details"
+    },
+    {
+        "keys": ["fn+ctrl+d"], "command": "directories"
+    },
+    {
+        "keys": ["fn+ctrl+q"], "command": "question_description"
     }
 ]

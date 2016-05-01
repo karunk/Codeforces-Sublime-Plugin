@@ -12,6 +12,10 @@
                     "caption": "Initialize Contest",
                     "command": "initialize"
                 },
+                {
+                    "caption": "Create contest directories",
+                    "command": "directories"
+                },
         		{
         			"caption": "Test against standard testcases",
         			"command": "standard_test"
@@ -39,6 +43,10 @@
                 {
                     "caption": "Submission Result",
                     "command": "submission_details"
+                },
+                {
+                    "caption": "Question Details",
+                    "command": "question_description"
                 }
         	]
     	}
