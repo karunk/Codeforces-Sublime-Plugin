@@ -175,7 +175,7 @@ class QuestionDescriptionCommand(sublime_plugin.WindowCommand):
 		head, tail = os.path.split(CurrentWindowFileName)
 		QuestionFilePointer = open(head+'/Question'+'-'+str(QuestionNumber), 'w')
 		for i in QuestionDetailsList:
-			QuestionFilePointer.write(str(i))
+			QuestionFilePointer.write(i.encode('ascii', 'ignore').decode('ascii'))
 			QuestionFilePointer.write("\n\n")
 
 

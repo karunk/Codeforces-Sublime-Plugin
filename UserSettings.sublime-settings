@@ -1,10 +1,10 @@
 {
   "Login_Settings": {
 
-      "username": "ladygaga",
-      "password": "scottywalker"
+      "username": "",
+      "password": ""
   },
 
-  "Directory": "/Users/karun",
-  "Lang_pref": "C++11" // C++ , C++11, C, Python2, Python3
+  "Directory": "",
+  "Lang_pref": "C++11" // C++ , C++11, C
 }
