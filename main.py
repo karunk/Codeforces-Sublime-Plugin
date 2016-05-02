@@ -52,6 +52,9 @@ class InitializeCommand(sublime_plugin.TextCommand):
 
 		ContestNumber = user_input
 		r = requests.get("http://codeforces.com/contest/" + str(ContestNumber))
+		if r.status_code == 503:
+			sublime.error_message("Error 503 from codeforces. Invalid contest Id or codeforces is down!")
+			return
 		data = r.text
 		soup = bs(data)
 		refined_soup = soup.findAll('a', href=re.compile('^/contest/'+str(ContestNumber)+'/problem'))
